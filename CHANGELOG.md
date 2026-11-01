@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `PureQLParametersSchemaTransformer`: an `IOpenApiSchemaTransformer` that makes the items of a collection and the values of a dictionary of `IParameterType`, `IParameter` or `IListParameter` reference their components. With the serialization converters registered, ASP.NET Core wrote `IParameter[]` as `{"type":"array"}` and `IReadOnlyDictionary<string, IParameter>` as `{"type":"object"}`, without the reference, and a document whose parameters were only such values had no `IParameter` component for `PureQLParametersDocumentTransformer` to replace. Register it next to the document transformer.
+
 ## [0.1.0-preview.0.1.0] - 2026-11-01
 
 ### Added

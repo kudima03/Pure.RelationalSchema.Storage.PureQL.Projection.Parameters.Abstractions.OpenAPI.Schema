@@ -11,7 +11,12 @@ AOT-compatible OpenAPI document transformer for the query parameter abstractions
 
 [`Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions`](https://github.com/kudima03/Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions) describes a value bound to a query parameter: its PureQL type and its value as invariant cell text, or, for a list parameter, its list type and its items. [`Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.Serialization`](https://github.com/kudima03/Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.Serialization) writes them as JSON.
 
-ASP.NET Core's OpenAPI generator cannot see that JSON: it reflects over the interfaces, so `IString` becomes an array of `IChar` objects and `IBool` an object with a `boolValue`. This package provides `PureQLParametersDocumentTransformer`, an `IOpenApiDocumentTransformer` that replaces the generated `IParameterType`, `IParameter` and `IListParameter` component schemas with schemas matching the JSON the converters write. The schemas are built in code, without reflection, so the transformer works under trimming and native AOT.
+ASP.NET Core's OpenAPI generator cannot see that JSON: it reflects over the interfaces, so `IString` becomes an array of `IChar` objects and `IBool` an object with a `boolValue`. With the converters registered, it writes a collection or a dictionary of parameters without its items. This package provides two transformers:
+
+- `PureQLParametersDocumentTransformer`, an `IOpenApiDocumentTransformer` that replaces the generated `IParameterType`, `IParameter` and `IListParameter` component schemas with schemas matching the JSON the converters write.
+- `PureQLParametersSchemaTransformer`, an `IOpenApiSchemaTransformer` that makes the items of a collection and the values of a dictionary of parameters reference those components.
+
+The schemas are built in code, without reflection, so the transformers work under trimming and native AOT.
 
 ## Installation
 
@@ -24,6 +29,7 @@ dotnet add package Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Ab
 | Name | Namespace | Description |
 |------|-----------|-------------|
 | `PureQLParametersDocumentTransformer` | `Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.OpenAPI.Schema` | `IOpenApiDocumentTransformer` that replaces the generated schemas of `IParameterType`, `IParameter` and `IListParameter` |
+| `PureQLParametersSchemaTransformer` | `Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.OpenAPI.Schema` | `IOpenApiSchemaTransformer` that points the items of a collection and the values of a dictionary of those types at their components |
 
 ## Schemas
 
@@ -51,13 +57,19 @@ dotnet add package Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Ab
 
 The schemas describe the JSON as it is written. When reading, the converters also accept a list parameter without its `value`, which they build from the items.
 
+### Collections and dictionaries
+
+With the converters registered, ASP.NET Core still references the component of a parameter it meets as a property, a body or a response, but writes `IParameter[]` as `{"type":"array"}` and `IReadOnlyDictionary<string, IParameter>` as `{"type":"object"}`, without `items` or `additionalProperties`. When the document has no other reference to `IParameter`, it then has no `IParameter` component either, so the document transformer has nothing to replace.
+
+`PureQLParametersSchemaTransformer` restores them: for a collection or a dictionary whose element type is `IParameterType`, `IParameter` or `IListParameter` (matched by its full name), it sets `items` or `additionalProperties` to the schema ASP.NET Core generates for the element type, which ASP.NET Core then writes as a reference to that type's component. Other schemas are left as they are.
+
 ### Which components are replaced
 
 The transformer replaces a component only if the document has it, and then adds the components it references: `IListParameter` brings `IParameter`, and `IParameter` brings `IParameterType`. Other schemas, such as the generated `IString`, `IBool` and `IChar`, are left as they are; register [`Pure.Primitives.Abstractions.OpenAPI.Schema`](https://github.com/kudima03/Pure.Primitives.Abstractions.OpenAPI.Schema) as well if other endpoints use Pure primitives. The schemas are built anew for each document, so one document's transformers never change another's.
 
 ## Usage
 
-Register the transformer, and the `System.Text.Json` converters the schemas describe:
+Register both transformers, and the `System.Text.Json` converters the schemas describe. Without the schema transformer, the request body of the endpoint below is an array without items:
 
 ```csharp
 using System.Text.Json.Serialization;
@@ -69,6 +81,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi(options =>
 {
+    options.AddSchemaTransformer<PureQLParametersSchemaTransformer>();
     options.AddDocumentTransformer<PureQLParametersDocumentTransformer>();
 });
 
@@ -103,11 +116,11 @@ app.Run();
 - **Matches the JSON** — the schemas describe what `PureQLParametersConverters` writes, and the tests check its output against them
 - **Replace, never invent** — a component is replaced only when the document has it or a replaced component references it
 - **AOT-compatible** — `IsAotCompatible=true`; schemas are built in code, without reflection
-- **One public type** — `PureQLParametersDocumentTransformer`
+- **Two public types** — `PureQLParametersDocumentTransformer` and `PureQLParametersSchemaTransformer`
 
 ## Dependencies
 
-- [`Microsoft.AspNetCore.OpenApi`](https://www.nuget.org/packages/Microsoft.AspNetCore.OpenApi) — `IOpenApiDocumentTransformer`
+- [`Microsoft.AspNetCore.OpenApi`](https://www.nuget.org/packages/Microsoft.AspNetCore.OpenApi) — `IOpenApiDocumentTransformer` and `IOpenApiSchemaTransformer`
 - [`Microsoft.OpenApi`](https://www.nuget.org/packages/Microsoft.OpenApi) — the OpenAPI document model
 
 The package does not reference the abstractions: it matches the components by the names ASP.NET Core gives them.

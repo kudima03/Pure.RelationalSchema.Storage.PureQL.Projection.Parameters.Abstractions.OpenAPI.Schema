@@ -22,13 +22,15 @@ CI additionally passes `-p:AssemblyVersion` (pinned to the major) and `-p:FileVe
 
 ## Architecture
 
-This is a **single-class NuGet library**: `PureQLParametersDocumentTransformer`, a sealed class implementing `IOpenApiDocumentTransformer` (from `Microsoft.AspNetCore.OpenApi`). It replaces the component schemas ASP.NET Core generates for the interfaces of `Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions` with schemas matching the JSON written by `Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.Serialization`:
+This is a **two-class NuGet library**. `PureQLParametersDocumentTransformer`, a sealed class implementing `IOpenApiDocumentTransformer` (from `Microsoft.AspNetCore.OpenApi`), replaces the component schemas ASP.NET Core generates for the interfaces of `Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions` with schemas matching the JSON written by `Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.Serialization`:
 
 - `IParameterType`: `{"name","nullable"}`, both required; `name` is an `enum` of the 16 PureQL type names (`integer` … `uuid`, `integerList` … `uuidList`)
 - `IParameter`: `{"type","value","items"}`, `type` and `value` required; `items` is there because the `IParameter` converter writes a list parameter with its items
 - `IListParameter`: the same properties, with `items` required too
 
 If the JSON format of the serialization package or the type names of the abstractions change, update the schemas, the `Expected/Components.json` snapshot and the README together.
+
+**Schema transformer:** `PureQLParametersSchemaTransformer` (`IOpenApiSchemaTransformer`) exists because, with the serialization converters registered, ASP.NET Core writes a collection or dictionary of parameters without `items` / `additionalProperties`, and then may not create the component at all. For a schema whose `JsonTypeInfo.ElementType` is one of the three interfaces (matched by full name), it sets `items` (collections) or `additionalProperties` (`JsonTypeInfoKind.Dictionary`) to `context.GetOrCreateSchemaAsync(elementType)`. That schema carries ASP.NET Core's component marker, so ASP.NET Core turns it into a `$ref` and creates the component under the default reference id (the type name), which the document transformer then replaces. Do not set an `OpenApiSchemaReference` there: ASP.NET Core's reference resolution inlines the target of a reference set by a schema transformer.
 
 **Matching:** components are matched by the names ASP.NET Core gives them (`IParameterType`, `IParameter`, `IListParameter`). A component is replaced only if the document has it, and the components it references are added: `IListParameter` brings `IParameter`, `IParameter` brings `IParameterType`. Other schemas (the generated `IString`, `IBool`, `IChar`, …) are never touched. The package does not reference the abstractions or the serialization package.
 
@@ -49,7 +51,8 @@ If the JSON format of the serialization package or the type names of the abstrac
 **Tests:** xUnit project at `src/Tests/Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.OpenAPI.Schema.Tests/`, targeting net10.0:
 
 - `PureQLParametersDocumentTransformerTests`: the transformer on hand-built documents
-- `AspNetCoreDocumentTests`: an in-memory ASP.NET Core app (`OpenApiApplication`, on `TestServer`) whose generated document is compared with `Expected/Components.json`
+- `AspNetCoreDocumentTests`: an in-memory ASP.NET Core app (`OpenApiApplication`, on `TestServer`, without the converters) whose generated document is compared with `Expected/Components.json`
+- `PureQLParametersSchemaTransformerTests`: an in-memory app set up as the README tells (`ConvertedOpenApiApplication`: converters registered, both transformers, one `POST /request` endpoint per test): collection items and dictionary values reference the components, other collections are untouched
 - `SerializationConformanceTests`: JSON written by the published `PureQLParametersConverters` for the published `Pure.RelationalSchema.Storage.PureQL.Projection.Parameters` implementations, checked against the schemas
 
 The test project is on `Microsoft.NET.Sdk`, so it sets `InterceptorsNamespaces` for the `AddOpenApi` source generator; without it the build fails with CS9137. CI enforces ≥98% line coverage (warning below 99%) and a 98% mutation score with dotnet-stryker.
