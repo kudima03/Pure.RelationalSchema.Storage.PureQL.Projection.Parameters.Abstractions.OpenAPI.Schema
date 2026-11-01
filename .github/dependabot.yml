@@ -2,11 +2,15 @@ version: 2
 updates:
 - package-ecosystem: nuget
   directories:
-    - "src/<repo-name>"
-    - "src/Tests/<repo-name>.Tests"
+    - "src/Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.OpenAPI.Schema"
+    - "src/Tests/Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.OpenAPI.Schema.Tests"
   schedule:
     interval: daily
 - package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: weekly
+- package-ecosystem: "devcontainers"
   directory: "/"
   schedule:
     interval: weekly
