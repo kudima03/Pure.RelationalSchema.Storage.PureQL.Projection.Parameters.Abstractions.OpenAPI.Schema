@@ -21,6 +21,19 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
     <PackageReference Include="Microsoft.OpenApi" Version="2.13.0" />
   </ItemGroup>
+  <!--
+    Microsoft.AspNetCore.OpenApi ships a source generator that adds XML comment support
+    to the application calling AddOpenApi. This library does not call it, so the
+    generated code would only be dead weight in the package.
+  -->
+  <Target Name="RemoveOpenApiSourceGenerator" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer
+        Remove="@(Analyzer)"
+        Condition="'%(Filename)' == 'Microsoft.AspNetCore.OpenApi.SourceGenerators'"
+      />
+    </ItemGroup>
+  </Target>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
