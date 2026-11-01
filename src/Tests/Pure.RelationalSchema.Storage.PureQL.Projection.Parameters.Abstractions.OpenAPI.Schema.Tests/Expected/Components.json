@@ -1,0 +1,127 @@
+{
+  "IParameterType": {
+    "examples": [
+      {
+        "name": "decimal",
+        "nullable": false
+      }
+    ],
+    "required": [
+      "name",
+      "nullable"
+    ],
+    "type": "object",
+    "properties": {
+      "name": {
+        "enum": [
+          "integer",
+          "decimal",
+          "string",
+          "boolean",
+          "date",
+          "time",
+          "datetime",
+          "uuid",
+          "integerList",
+          "decimalList",
+          "stringList",
+          "booleanList",
+          "dateList",
+          "timeList",
+          "datetimeList",
+          "uuidList"
+        ],
+        "type": "string",
+        "description": "The PureQL type name; for a list parameter, the list type name, such as stringList."
+      },
+      "nullable": {
+        "type": "boolean",
+        "description": "True for the type of a typed null; false for the type of a value and for a list type."
+      }
+    },
+    "description": "The PureQL type of a bound query parameter: the counterpart of the type of a PureQL literal."
+  },
+  "IParameter": {
+    "examples": [
+      {
+        "type": {
+          "name": "decimal",
+          "nullable": false
+        },
+        "value": "9.99"
+      }
+    ],
+    "required": [
+      "type",
+      "value"
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "$ref": "#/components/schemas/IParameterType"
+      },
+      "value": {
+        "type": "string",
+        "description": "The bound value as invariant cell text, such as -42, 1.5, True, 2026-10-29, 08:30:00, 2026-10-29T08:30:00 or a lower case uuid; the empty string for a typed null. For a list parameter, a JSON array of its items' values, such as [\"paid\",\"shipped\"]."
+      },
+      "items": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/IParameter"
+        },
+        "description": "The items of a list parameter, in order: parameters of the item type that hold a value. A parameter that is not a list has no items."
+      }
+    },
+    "description": "The value bound to a query parameter: the counterpart of a PureQL literal. A list parameter also has its items."
+  },
+  "IListParameter": {
+    "examples": [
+      {
+        "type": {
+          "name": "stringList",
+          "nullable": false
+        },
+        "value": "[\"paid\",\"shipped\"]",
+        "items": [
+          {
+            "type": {
+              "name": "string",
+              "nullable": false
+            },
+            "value": "paid"
+          },
+          {
+            "type": {
+              "name": "string",
+              "nullable": false
+            },
+            "value": "shipped"
+          }
+        ]
+      }
+    ],
+    "required": [
+      "type",
+      "value",
+      "items"
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "$ref": "#/components/schemas/IParameterType"
+      },
+      "value": {
+        "type": "string",
+        "description": "The bound value as invariant cell text, such as -42, 1.5, True, 2026-10-29, 08:30:00, 2026-10-29T08:30:00 or a lower case uuid; the empty string for a typed null. For a list parameter, a JSON array of its items' values, such as [\"paid\",\"shipped\"]."
+      },
+      "items": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/IParameter"
+        },
+        "description": "The items of a list parameter, in order: parameters of the item type that hold a value. A parameter that is not a list has no items."
+      }
+    },
+    "description": "The list bound to a list parameter, read by in: the counterpart of a PureQL list literal, with its items as parameters of the item type."
+  }
+}
