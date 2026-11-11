@@ -128,6 +128,7 @@ The package does not reference the abstractions: it matches the components by th
 ## Target Frameworks
 
 - .NET 10
+- .NET 11
 
 ## Related packages
 
