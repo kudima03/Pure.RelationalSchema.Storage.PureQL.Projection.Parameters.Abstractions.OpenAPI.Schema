@@ -40,7 +40,7 @@ If the JSON format of the serialization package or the type names of the abstrac
 
 **Source generator:** `Microsoft.AspNetCore.OpenApi` adds its XML comment generator to every project that references it. The library never calls `AddOpenApi`, so the `RemoveOpenApiSourceGenerator` target drops the generator from its build; otherwise ~500 lines of dead generated code would ship in the package and fail the coverage threshold. The test project keeps it, since `OpenApiApplication` calls `AddOpenApi`.
 
-**Multi-targeting:** net10.0 only, like `Microsoft.AspNetCore.OpenApi` 10.
+**Multi-targeting:** net10.0 and net11.0, each with the matching `Microsoft.AspNetCore.OpenApi` major (10.x and 11.0.0, with Microsoft.OpenApi 2.x and 3.x).
 
 **Documentation:** `GenerateDocumentationFile` is on, so public members need XML doc comments (CS1591).
 
@@ -48,7 +48,7 @@ If the JSON format of the serialization package or the type names of the abstrac
 
 **Publishing:** triggered by pushing a semver tag matching `*.*.*`. The tag name becomes the `PackageVersion`. Packages are published to both GitHub Packages and NuGet.org.
 
-**Tests:** xUnit project at `src/Tests/Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.OpenAPI.Schema.Tests/`, targeting net10.0:
+**Tests:** xUnit project at `src/Tests/Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.OpenAPI.Schema.Tests/`, targeting net11.0:
 
 - `PureQLParametersDocumentTransformerTests`: the transformer on hand-built documents
 - `AspNetCoreDocumentTests`: an in-memory ASP.NET Core app (`OpenApiApplication`, on `TestServer`, without the converters) whose generated document is compared with `Expected/Components.json`

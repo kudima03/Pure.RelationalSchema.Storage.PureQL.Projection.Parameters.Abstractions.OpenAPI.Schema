@@ -18,7 +18,9 @@ public sealed record AspNetCoreDocumentTests
 
         Assert.Contains(
             "array",
-            value["type"]!.AsArray().Select(type => type!.GetValue<string>())
+            value["type"] is JsonArray types
+                ? types.Select(type => type!.GetValue<string>())
+                : [value["type"]!.GetValue<string>()]
         );
         Assert.Equal(
             "#/components/schemas/IChar",
