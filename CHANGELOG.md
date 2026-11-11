@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-preview.0.3.0] - 2026-11-11
+
+### Added
+
+- .NET 11 support: the package now targets net10.0 and net11.0.
+
 ## [0.1.0-preview.0.2.0] - 2026-11-01
 
 ### Added
@@ -19,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `PureQLParametersDocumentTransformer`: an `IOpenApiDocumentTransformer` that replaces the schemas ASP.NET Core generates for `IParameterType`, `IParameter` and `IListParameter` with schemas matching their JSON, as written by `Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.Serialization`: `{"name","nullable"}` with the 16 PureQL type names as an `enum`, `{"type","value"}` and `{"type","value","items"}`, with descriptions and examples. AOT-compatible.
 
-[Unreleased]: https://github.com/kudima03/Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.OpenAPI.Schema/compare/0.1.0-preview.0.2.0...HEAD
+[Unreleased]: https://github.com/kudima03/Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.OpenAPI.Schema/compare/0.1.0-preview.0.3.0...HEAD
+[0.1.0-preview.0.3.0]: https://github.com/kudima03/Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.OpenAPI.Schema/compare/0.1.0-preview.0.2.0...0.1.0-preview.0.3.0
 [0.1.0-preview.0.2.0]: https://github.com/kudima03/Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.OpenAPI.Schema/compare/0.1.0-preview.0.1.0...0.1.0-preview.0.2.0
 [0.1.0-preview.0.1.0]: https://github.com/kudima03/Pure.RelationalSchema.Storage.PureQL.Projection.Parameters.Abstractions.OpenAPI.Schema/releases/tag/0.1.0-preview.0.1.0
